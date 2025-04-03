@@ -1,15 +1,61 @@
+// Theme toggle functionality
+const themeToggle = document.getElementById('themeToggle');
+const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+
+// Check for saved theme preference or use system preference
+const currentTheme = localStorage.getItem('theme') || 
+                    (prefersDarkScheme.matches ? 'dark' : 'light');
+if (currentTheme === 'dark') {
+    document.body.classList.add('dark-mode');
+}
+
+themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+    const theme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+    localStorage.setItem('theme', theme);
+    
+    // Update navbar background when toggling theme
+    const navbar = document.querySelector('.navbar');
+    if (theme === 'dark') {
+        navbar.style.backgroundColor = window.scrollY > 50 ? 'rgba(30, 30, 30, 0.95)' : '#1e1e1e';
+    } else {
+        navbar.style.backgroundColor = window.scrollY > 50 ? 'rgba(255, 255, 255, 0.95)' : 'var(--white)';
+    }
+});
+
 // Smooth scrolling for navigation links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
+    anchor.addEventListener('click', function(e) {
         e.preventDefault();
         
-        const target = document.querySelector(this.getAttribute('href'));
+        const targetId = this.getAttribute('href');
+        const target = document.querySelector(targetId);
         
         if (target) {
-            window.scrollTo({
-                top: target.offsetTop - 80, // Account for fixed navbar
-                behavior: 'smooth'
-            });
+            // Calculate the target position
+            const targetPosition = target.getBoundingClientRect().top + window.pageYOffset;
+            const startPosition = window.pageYOffset;
+            const distance = targetPosition - startPosition - 80; // Account for navbar height
+            const duration = 800; // Animation duration in ms
+            let startTime = null;
+            
+            function animation(currentTime) {
+                if (startTime === null) startTime = currentTime;
+                const timeElapsed = currentTime - startTime;
+                const run = ease(timeElapsed, startPosition, distance, duration);
+                window.scrollTo(0, run);
+                if (timeElapsed < duration) requestAnimationFrame(animation);
+            }
+            
+            // Easing function for smooth animation
+            function ease(t, b, c, d) {
+                t /= d / 2;
+                if (t < 1) return c / 2 * t * t + b;
+                t--;
+                return -c / 2 * (t * (t - 2) - 1) + b;
+            }
+            
+            requestAnimationFrame(animation);
         }
     });
 });
@@ -19,10 +65,18 @@ window.addEventListener('scroll', () => {
     const navbar = document.querySelector('.navbar');
     if (window.scrollY > 50) {
         navbar.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
-        navbar.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+        if (document.body.classList.contains('dark-mode')) {
+            navbar.style.backgroundColor = 'rgba(30, 30, 30, 0.95)';
+        } else {
+            navbar.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+        }
     } else {
         navbar.style.boxShadow = 'none';
-        navbar.style.backgroundColor = 'var(--white)';
+        if (document.body.classList.contains('dark-mode')) {
+            navbar.style.backgroundColor = '#1e1e1e';
+        } else {
+            navbar.style.backgroundColor = 'var(--white)';
+        }
     }
 });
 
@@ -70,10 +124,6 @@ if (contactForm) {
         }, 5000);
     });
 }
-
-// Project filter functionality can be added here if needed
-
-// Add animation for skill bars if you decide to add them
 
 // Display current year in footer copyright
 const yearSpan = document.querySelector('.footer .year');
