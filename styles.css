@@ -618,8 +618,9 @@ body {
     color: #e0e0e0;
 }
 
-/* Keep hero section in light mode always */
-.dark-mode .hero {
+/* Keep hero and footer section in light mode always */
+.dark-mode .hero,
+.dark-mode .footer {
     background: linear-gradient(rgba(3, 45, 96, 0.9), rgba(3, 45, 96, 0.9)), 
                 url('https://via.placeholder.com/1200x600') no-repeat center center/cover !important;
     color: #ffffff !important;
@@ -653,6 +654,7 @@ body {
     color: var(--white) !important;
 }
 
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .navbar .container {
@@ -683,7 +685,7 @@ body {
     }
     
     .timeline::after {
-        left: 31px;
+        left: 45px;
     }
     
     .timeline-item {
