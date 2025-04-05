@@ -428,7 +428,13 @@
                     </div>
                 </div>
                 <div class="contact-form">
-                    <form id="contactForm">
+                    <form id="contactForm" action="https://formsubmit.co/dushyant.srivastava21@gmail.com" method="POST">
+                        <! -- Honeypot --> 
+                        <input type="text" name="_honey" style="display: none;">
+                        
+                        <!-- Disable Captcha -->
+                        <input type="hidden" name="_captcha" value="false">
+                        <input type="hidden" name="_next" value="#">
                         <div class="form-group">
                             <label for="name">Name</label>
                             <input type="text" id="name" name="name" required>
