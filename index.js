@@ -80,48 +80,91 @@ window.addEventListener('scroll', () => {
     }
 });
 
-// Form submission handling
+// Form submission handling with fetch
 const contactForm = document.getElementById('contactForm');
 if (contactForm) {
     contactForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
+        // Disable submit button during submission
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending...';
+        
         // Get form values
-        const name = document.getElementById('name').value;
-        const email = document.getElementById('email').value;
-        const subject = document.getElementById('subject').value;
-        const message = document.getElementById('message').value;
-        
-        // Here you would typically send the form data to a server
-        // For now, we'll just log it and show a success message
-        console.log({ name, email, subject, message });
-        
-        // Show success message
+        const formData = {
+            name: document.getElementById('name').value,
+            email: document.getElementById('email').value,
+            subject: document.getElementById('subject').value,
+            message: document.getElementById('message').value,
+            _template: 'table',
+            _captcha: 'false'
+        };
+
+        // Show loading state
         const formGroups = document.querySelectorAll('.form-group');
-        formGroups.forEach(group => group.style.display = 'none');
+        formGroups.forEach(group => group.style.opacity = '0.5');
         
-        const submitBtn = contactForm.querySelector('button[type="submit"]');
-        submitBtn.style.display = 'none';
-        
-        const successMessage = document.createElement('div');
-        successMessage.className = 'success-message';
-        successMessage.innerHTML = `
-            <i class="fas fa-check-circle" style="font-size: 3rem; color: var(--success-color); margin-bottom: 15px;"></i>
-            <h3>Thank You!</h3>
-            <p>Your message has been sent successfully. I'll get back to you soon.</p>
-        `;
-        successMessage.style.textAlign = 'center';
-        successMessage.style.padding = '20px';
-        
-        contactForm.appendChild(successMessage);
-        
-        // Reset form after 5 seconds
-        setTimeout(() => {
-            contactForm.reset();
-            successMessage.remove();
-            formGroups.forEach(group => group.style.display = 'block');
-            submitBtn.style.display = 'block';
-        }, 5000);
+        fetch("https://formsubmit.co/ajax/6cc0bfc0b517f89af990e586dd718681", {
+            method: "POST",
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            // Show success message
+            formGroups.forEach(group => group.style.display = 'none');
+            submitBtn.style.display = 'none';
+            
+            const successMessage = document.createElement('div');
+            successMessage.className = 'success-message';
+            successMessage.innerHTML = `
+                <i class="fas fa-check-circle" style="font-size: 3rem; color: var(--success-color); margin-bottom: 15px;"></i>
+                <h3>Thank You!</h3>
+                <p>Your message has been sent successfully. I'll get back to you soon.</p>
+            `;
+            contactForm.appendChild(successMessage);
+            
+            // Reset form after 5 seconds
+            setTimeout(() => {
+                contactForm.reset();
+                successMessage.remove();
+                formGroups.forEach(group => {
+                    group.style.display = 'block';
+                    group.style.opacity = '1';
+                });
+                submitBtn.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send Message';
+            }, 5000);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Show error message
+            const errorMessage = document.createElement('div');
+            errorMessage.className = 'error-message';
+            errorMessage.innerHTML = `
+                <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: #ff4444; margin-bottom: 15px;"></i>
+                <h3>Error</h3>
+                <p>There was a problem sending your message. Please try again later.</p>
+            `;
+            contactForm.appendChild(errorMessage);
+            
+            // Reset form state
+            formGroups.forEach(group => group.style.opacity = '1');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Send Message';
+            
+            setTimeout(() => {
+                errorMessage.remove();
+            }, 5000);
+        });
     });
 }
 
